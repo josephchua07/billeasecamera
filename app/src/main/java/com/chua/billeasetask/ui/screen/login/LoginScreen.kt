@@ -5,11 +5,10 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun StatefulLoginScreen(
-    loginViewModel: LoginViewModel = viewModel()
+    loginViewModel: LoginViewModel
 ) {
     with(loginViewModel) {
         StatelessLoginScreen(
