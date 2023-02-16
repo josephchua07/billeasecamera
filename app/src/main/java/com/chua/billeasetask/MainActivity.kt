@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -20,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberImagePainter
 import com.chua.billeasetask.ui.NavigationDestination
 import com.chua.billeasetask.ui.screen.home.HomeViewModel
 import com.chua.billeasetask.ui.screen.home.StatefulHomeScreen
@@ -42,6 +44,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var cameraExecutor: ExecutorService
 
     private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
+
+    private lateinit var photoUri: Uri
+    private var shouldShowPhoto: MutableState<Boolean> = mutableStateOf(false)
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -79,7 +84,14 @@ class MainActivity : ComponentActivity() {
                             StatefulHomeScreen(
                                 homeViewModel = homeViewModel,
                                 navController = navController
-                            )
+                            ) {
+                                if (shouldShowPhoto.value) {
+                                    Image(
+                                        painter = rememberImagePainter(photoUri),
+                                        contentDescription = null
+                                    )
+                                }
+                            }
                         }
 
                         composable(NavigationDestination.TAKE_PHOTO.name) {
@@ -126,6 +138,9 @@ class MainActivity : ComponentActivity() {
     private fun handleImageCapture(uri: Uri) {
         Log.i("camera", "Image captured: $uri")
         shouldShowCamera.value = false
+
+        photoUri = uri
+        shouldShowPhoto.value = true
     }
 
     private fun getOutputDirectory(): File {
