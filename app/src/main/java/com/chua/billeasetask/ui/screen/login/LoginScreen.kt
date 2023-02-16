@@ -5,10 +5,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 
 @Composable
 fun StatefulLoginScreen(
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    navController: NavController
 ) {
     with(loginViewModel) {
         StatelessLoginScreen(
@@ -16,7 +18,7 @@ fun StatefulLoginScreen(
             onUsernameChanged = interactions.onUsernameChanged,
             password = uiState.password.value,
             onPasswordChanged = interactions.onPasswordChanged,
-            onButtonClicked = interactions.onLogin
+            onButtonClicked = { interactions.onLogin(navController) }
         )
     }
 }
