@@ -27,7 +27,9 @@ import com.chua.billeasetask.ui.screen.home.HomeViewModel
 import com.chua.billeasetask.ui.screen.home.StatefulHomeScreen
 import com.chua.billeasetask.ui.screen.login.LoginViewModel
 import com.chua.billeasetask.ui.screen.login.StatefulLoginScreen
-import com.chua.billeasetask.ui.screen.takephoto.CameraView
+import com.chua.billeasetask.ui.screen.takephoto.StatefulTakePhotoScreen
+import com.chua.billeasetask.ui.screen.takephoto.StatelessDoneTakingPhotoButton
+import com.chua.billeasetask.ui.screen.takephoto.TakePhotoViewModel
 import com.chua.billeasetask.ui.theme.BilleaseTaskTheme
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
@@ -39,6 +41,7 @@ class MainActivity : ComponentActivity() {
 
     private val loginViewModel: LoginViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
+    private val takePhotoViewModel: TakePhotoViewModel by viewModels()
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
@@ -96,12 +99,20 @@ class MainActivity : ComponentActivity() {
 
                         composable(NavigationDestination.TAKE_PHOTO.name) {
                             if (shouldShowCamera.value) {
-                                CameraView(
+                                StatefulTakePhotoScreen(
+                                    navController = navController,
+                                    takePhotoViewModel = takePhotoViewModel,
                                     outputDirectory = outputDirectory,
                                     executor = cameraExecutor,
                                     onImageCaptured = ::handleImageCapture,
                                     onError = { Log.e("camera", "View error:", it) }
                                 )
+                            } else {
+                                StatelessDoneTakingPhotoButton {
+                                    takePhotoViewModel.interactions.onDoneTakingPhoto(
+                                        navController
+                                    )
+                                }
                             }
                         }
 
@@ -138,7 +149,6 @@ class MainActivity : ComponentActivity() {
     private fun handleImageCapture(uri: Uri) {
         Log.i("camera", "Image captured: $uri")
         shouldShowCamera.value = false
-
         photoUri = uri
         shouldShowPhoto.value = true
     }
