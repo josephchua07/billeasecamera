@@ -1,10 +1,14 @@
 package com.chua.billeasetask.ui.screen.home
 
+import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -16,29 +20,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
+import com.chua.billeasetask.ui.screen.takephoto.TakePhotoViewModel
 
 @Composable
 fun StatefulHomeScreen(
+    shouldShowPhoto: Boolean,
     homeViewModel: HomeViewModel,
+    takePhotoViewModel: TakePhotoViewModel,
     navController: NavController,
-    content: @Composable (ColumnScope.() -> Unit)
 ) {
     with(homeViewModel) {
         StatelessHomeScreen(
+            takePhotoViewModel.photoUris,
+            shouldShowPhoto,
             onTakePhotoClicked = { interactions.takePhoto(navController) },
             onLogoutClicked = { interactions.logout(navController) },
-            content = content
         )
     }
 }
 
 @Composable
 private fun StatelessHomeScreen(
+    photoUris: List<Uri>,
+    shouldShowPhoto: Boolean,
     onTakePhotoClicked: () -> Unit,
     onLogoutClicked: () -> Unit,
-    content: @Composable (ColumnScope.() -> Unit)
 ) {
-
     Scaffold(
         topBar = {
             TopAppBar {
@@ -54,7 +62,8 @@ private fun StatelessHomeScreen(
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(padding),
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
@@ -67,7 +76,16 @@ private fun StatelessHomeScreen(
                 Text(text = "Take Photo")
             }
 
-            content()
+            if (shouldShowPhoto)
+                photoUris.forEach { uri ->
+                    Image(
+                        painter = rememberImagePainter(uri),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(200.dp)
+                            .padding(8.dp),
+                    )
+                }
 
             Button(
                 modifier = Modifier

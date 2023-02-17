@@ -8,53 +8,70 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
 @HiltViewModel
 class TakePhotoViewModel @Inject constructor() : ViewModel() {
 
+    var photoUris: MutableList<Uri> = mutableListOf()
+
+    var photoCapturedNumber = 0
+    lateinit var imageCapture: ImageCapture
+    lateinit var outputDirectory: File
+    lateinit var executor: Executor
+
+    fun setCamera(imageCapture: ImageCapture, outputDirectory: File, executor: Executor) {
+        this.imageCapture = imageCapture
+        this.outputDirectory = outputDirectory
+        this.executor = executor
+    }
+
+    fun capturePhoto(
+        onImageCaptured: () -> Unit,
+        onError: (ImageCaptureException) -> Unit
+    ) {
+        val photoFile = File(
+            outputDirectory,
+            "PhotoCaptured$photoCapturedNumber.jpg"
+        )
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            executor,
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e("camera", "Take photo error:", exception)
+                    onError(exception)
+                }
+
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    photoCapturedNumber++
+                    val savedUri = Uri.fromFile(photoFile)
+                    photoUris.add(savedUri)
+                    if (photoUris.size >= 3)
+                        onImageCaptured()
+                }
+            })
+    }
+
     val interactions = object : Interactions {
         override val onTakePhoto: (
-            String,
-            ImageCapture,
-            File,
-            Executor,
-            (Uri) -> Unit,
-            (ImageCaptureException) -> Unit
+                () -> Unit,
+                (ImageCaptureException) -> Unit
         ) -> Unit =
-            { filenameFormat, imageCapture, outputDirectory, executor, onImageCaptured, onError ->
-
+            { onImageCaptured, onError ->
                 viewModelScope.launch {
-
-                    val photoFile = File(
-                        outputDirectory,
-                        SimpleDateFormat(
-                            filenameFormat,
-                            Locale.US
-                        ).format(System.currentTimeMillis()) + ".jpg"
-                    )
-
-                    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-                    imageCapture.takePicture(
-                        outputOptions,
-                        executor,
-                        object : ImageCapture.OnImageSavedCallback {
-                            override fun onError(exception: ImageCaptureException) {
-                                Log.e("camera", "Take photo error:", exception)
-                                onError(exception)
-                            }
-
-                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                                val savedUri = Uri.fromFile(photoFile)
-                                onImageCaptured(savedUri)
-                            }
-                        })
+                    photoUris.clear()
+                    repeat(3) {
+                        capturePhoto(onImageCaptured, onError)
+                        delay(2000L)
+                    }
                 }
             }
 
@@ -66,12 +83,8 @@ class TakePhotoViewModel @Inject constructor() : ViewModel() {
 
     interface Interactions {
         val onTakePhoto: (
-            String,
-            ImageCapture,
-            File,
-            Executor,
-            (Uri) -> Unit,
-            (ImageCaptureException) -> Unit
+                () -> Unit,
+                (ImageCaptureException) -> Unit
         ) -> Unit
 
         val onDoneTakingPhoto: (NavController) -> Unit

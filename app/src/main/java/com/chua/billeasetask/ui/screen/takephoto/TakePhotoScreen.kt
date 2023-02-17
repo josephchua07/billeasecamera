@@ -38,7 +38,7 @@ fun StatefulTakePhotoScreen(
     takePhotoViewModel: TakePhotoViewModel,
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
+    onImageCaptured: () -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
     val lensFacing = CameraSelector.LENS_FACING_FRONT
@@ -64,12 +64,14 @@ fun StatefulTakePhotoScreen(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
+    takePhotoViewModel.setCamera(
+        imageCapture,
+        outputDirectory,
+        executor
+    )
+
     StatelessTakePhotoScreen(previewView = previewView) {
         takePhotoViewModel.interactions.onTakePhoto(
-            "yyyy-MM-dd-HH-mm-ss-SSS",
-            imageCapture,
-            outputDirectory,
-            executor,
             onImageCaptured,
             onError
         )
@@ -120,18 +122,25 @@ private fun StatelessTakePhotoScreen(
 }
 
 @Composable
-fun StatelessDoneTakingPhotoButton(photoUri: Uri, onDone: () -> Unit) {
+fun StatelessDoneTakingPhotoButton(photoUris: List<Uri>, onDone: () -> Unit) {
 
     Scaffold { padding ->
         Column(
-            Modifier.padding(padding),
+            Modifier
+                .padding(padding)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = rememberImagePainter(photoUri),
-                contentDescription = null,
-                modifier = Modifier.padding(24.dp),
-            )
+
+            photoUris.forEach { uri ->
+                Image(
+                    painter = rememberImagePainter(uri),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(200.dp)
+                        .padding(8.dp),
+                )
+            }
 
             Button(
                 modifier = Modifier
