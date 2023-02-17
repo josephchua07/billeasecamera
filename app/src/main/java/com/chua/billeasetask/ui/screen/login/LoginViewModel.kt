@@ -21,8 +21,10 @@ class LoginViewModel @Inject constructor(private val api: AuthorizationApi) : Vi
         override val onLogin: (NavController) -> Unit = {
             Log.d("username", uiState.username.value)
             Log.d("password", uiState.password.value)
-            login(uiState.username.value, uiState.password.value) {
-                it.navigate(NavigationDestination.HOME.name)
+            if (uiState.username.value.isNotBlank() && uiState.password.value.isNotBlank()) {
+                login(uiState.username.value, uiState.password.value) {
+                    it.navigate(NavigationDestination.HOME.name)
+                }
             }
         }
         override val onUsernameChanged: (String) -> Unit = {
