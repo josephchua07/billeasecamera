@@ -91,7 +91,6 @@ class MainActivity : ComponentActivity() {
                         composable(NavigationDestination.TAKE_PHOTO.name) {
                             if (shouldShowCamera.value) {
                                 StatefulTakePhotoScreen(
-                                    navController = navController,
                                     takePhotoViewModel = takePhotoViewModel,
                                     outputDirectory = outputDirectory,
                                     executor = cameraExecutor,

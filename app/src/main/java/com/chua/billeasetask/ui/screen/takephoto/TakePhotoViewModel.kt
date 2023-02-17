@@ -4,6 +4,8 @@ import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -18,6 +20,7 @@ import javax.inject.Inject
 class TakePhotoViewModel @Inject constructor() : ViewModel() {
 
     var photoUris: MutableList<Uri> = mutableListOf()
+    var takingPicture: MutableState<Boolean> = mutableStateOf(false)
 
     var photoCapturedNumber = 0
     lateinit var imageCapture: ImageCapture
@@ -67,11 +70,13 @@ class TakePhotoViewModel @Inject constructor() : ViewModel() {
         ) -> Unit =
             { onImageCaptured, onError ->
                 viewModelScope.launch {
+                    takingPicture.value = true
                     photoUris.clear()
                     repeat(3) {
                         capturePhoto(onImageCaptured, onError)
                         delay(2000L)
                     }
+                    takingPicture.value = false
                 }
             }
 

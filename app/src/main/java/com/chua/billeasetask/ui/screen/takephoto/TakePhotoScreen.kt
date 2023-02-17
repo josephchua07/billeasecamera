@@ -26,7 +26,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.chua.billeasetask.util.getCameraProvider
 import java.io.File
@@ -34,7 +33,6 @@ import java.util.concurrent.Executor
 
 @Composable
 fun StatefulTakePhotoScreen(
-    navController: NavController,
     takePhotoViewModel: TakePhotoViewModel,
     outputDirectory: File,
     executor: Executor,
@@ -70,7 +68,7 @@ fun StatefulTakePhotoScreen(
         executor
     )
 
-    StatelessTakePhotoScreen(previewView = previewView) {
+    StatelessTakePhotoScreen(previewView = previewView, takePhotoViewModel.takingPicture.value) {
         takePhotoViewModel.interactions.onTakePhoto(
             onImageCaptured,
             onError
@@ -82,41 +80,44 @@ fun StatefulTakePhotoScreen(
 @Composable
 private fun StatelessTakePhotoScreen(
     previewView: PreviewView,
+    takingPicture: Boolean,
     onTakePhoto: () -> Unit
 ) {
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
 
-        IconButton(
-            modifier = Modifier.padding(bottom = 100.dp),
-            onClick = {
-                Log.i("camera", "ON CLICK")
-                onTakePhoto()
-            },
-            content = {
-                Icon(
-                    imageVector = Icons.Sharp.Lens,
-                    contentDescription = "Take picture",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .padding(1.dp)
-                        .border(1.dp, Color.White, CircleShape)
+        if (!takingPicture) {
+            IconButton(
+                modifier = Modifier.padding(bottom = 100.dp),
+                onClick = {
+                    Log.i("camera", "ON CLICK")
+                    onTakePhoto()
+                },
+                content = {
+                    Icon(
+                        imageVector = Icons.Sharp.Lens,
+                        contentDescription = "Take picture",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(1.dp)
+                            .border(1.dp, Color.White, CircleShape)
+                    )
+                }
+            )
+        } else {
+            Card(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(24.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    modifier = Modifier.padding(8.dp),
+                    text = "We are now taking your photos...",
+                    fontSize = 20.sp
                 )
             }
-        )
-
-        Card(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(24.dp),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(
-                modifier = Modifier.padding(8.dp),
-                text = "We are now taking your photo",
-                fontSize = 20.sp
-            )
         }
     }
 }
