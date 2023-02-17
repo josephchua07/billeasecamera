@@ -7,16 +7,12 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.runtime.Composable
@@ -28,8 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import com.chua.billeasetask.util.getCameraProvider
 import java.io.File
 import java.util.concurrent.Executor
@@ -88,7 +86,7 @@ private fun StatelessTakePhotoScreen(
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
 
         IconButton(
-            modifier = Modifier.padding(bottom = 20.dp),
+            modifier = Modifier.padding(bottom = 100.dp),
             onClick = {
                 Log.i("camera", "ON CLICK")
                 onTakePhoto()
@@ -105,12 +103,47 @@ private fun StatelessTakePhotoScreen(
                 )
             }
         )
+
+        Card(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(24.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                modifier = Modifier.padding(8.dp),
+                text = "We are now taking your photo",
+                fontSize = 20.sp
+            )
+        }
     }
 }
 
 @Composable
-fun StatelessDoneTakingPhotoButton(onDone: () -> Unit) {
-    Button(onClick = onDone) {
-        Text(text = "Done")
+fun StatelessDoneTakingPhotoButton(photoUri: Uri, onDone: () -> Unit) {
+
+    Scaffold { padding ->
+        Column(
+            Modifier.padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = rememberImagePainter(photoUri),
+                contentDescription = null,
+                modifier = Modifier.padding(24.dp),
+            )
+
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                shape = RoundedCornerShape(20.dp),
+                onClick = onDone
+            ) {
+                Text(text = "Done")
+            }
+        }
     }
+
+
 }

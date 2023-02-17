@@ -11,11 +11,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
@@ -91,7 +93,8 @@ class MainActivity : ComponentActivity() {
                                 if (shouldShowPhoto.value) {
                                     Image(
                                         painter = rememberImagePainter(photoUri),
-                                        contentDescription = null
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(24.dp),
                                     )
                                 }
                             }
@@ -108,7 +111,7 @@ class MainActivity : ComponentActivity() {
                                     onError = { Log.e("camera", "View error:", it) }
                                 )
                             } else {
-                                StatelessDoneTakingPhotoButton {
+                                StatelessDoneTakingPhotoButton(photoUri) {
                                     takePhotoViewModel.interactions.onDoneTakingPhoto(
                                         navController
                                     )

@@ -56,7 +56,6 @@ private fun StatelessLoginScreen(
     ) { padding ->
         Column(
             Modifier
-                .fillMaxWidth()
                 .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
