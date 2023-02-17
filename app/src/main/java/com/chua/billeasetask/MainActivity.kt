@@ -2,7 +2,6 @@ package com.chua.billeasetask
 
 import android.Manifest.permission.CAMERA
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -12,8 +11,6 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -44,15 +41,12 @@ class MainActivity : ComponentActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
 
-    private var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
-    private var shouldShowPhoto: MutableState<Boolean> = mutableStateOf(false)
-
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
             Log.i("camera", "Permission granted")
-            shouldShowCamera.value = true
+            homeViewModel.uiState.shouldShowCamera.value = true
         } else {
             Log.i("camera", "Permission denied")
         }
@@ -62,7 +56,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             BilleaseTaskTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
@@ -71,7 +64,6 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
 
                     NavHost(navController = navController, startDestination = "login") {
-
                         composable(NavigationDestination.LOGIN.name) {
                             StatefulLoginScreen(
                                 loginViewModel = loginViewModel,
@@ -81,7 +73,6 @@ class MainActivity : ComponentActivity() {
 
                         composable(NavigationDestination.HOME.name) {
                             StatefulHomeScreen(
-                                shouldShowPhoto.value,
                                 homeViewModel = homeViewModel,
                                 takePhotoViewModel = takePhotoViewModel,
                                 navController = navController
@@ -89,7 +80,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(NavigationDestination.TAKE_PHOTO.name) {
-                            if (shouldShowCamera.value) {
+                            if (homeViewModel.uiState.shouldShowCamera.value) {
                                 StatefulTakePhotoScreen(
                                     takePhotoViewModel = takePhotoViewModel,
                                     outputDirectory = outputDirectory,
@@ -99,14 +90,11 @@ class MainActivity : ComponentActivity() {
                                 )
                             } else {
                                 StatelessDoneTakingPhotoButton(takePhotoViewModel.photoUris) {
-                                    takePhotoViewModel.interactions.onDoneTakingPhoto(
-                                        navController
-                                    )
-                                    shouldShowCamera.value = true
+                                    takePhotoViewModel.interactions.onDoneTakingPhoto(navController)
+                                    homeViewModel.uiState.shouldShowCamera.value = true
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -125,7 +113,7 @@ class MainActivity : ComponentActivity() {
                 CAMERA
             ) == PackageManager.PERMISSION_GRANTED -> {
                 Log.i("camera", "Permission previously granted")
-                shouldShowCamera.value = true
+                homeViewModel.uiState.shouldShowCamera.value = true
             }
 
             ActivityCompat.shouldShowRequestPermissionRationale(
@@ -139,8 +127,8 @@ class MainActivity : ComponentActivity() {
 
     private fun handleImageCapture() {
         Log.i("camera", "Images captured")
-            shouldShowCamera.value = false
-            shouldShowPhoto.value = true
+        homeViewModel.uiState.shouldShowCamera.value = false
+        homeViewModel.uiState.shouldShowPhoto.value = true
     }
 
     private fun getOutputDirectory(): File {

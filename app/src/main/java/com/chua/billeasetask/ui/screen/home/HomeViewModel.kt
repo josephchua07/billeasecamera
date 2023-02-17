@@ -1,5 +1,7 @@
 package com.chua.billeasetask.ui.screen.home
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.chua.billeasetask.ui.NavigationDestination
@@ -9,7 +11,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor() : ViewModel() {
 
-    //TODO CREATE UI STATE
+    val uiState: ScreenState = ScreenState()
 
     val interactions = object : Interactions {
         override val takePhoto: (NavController) -> Unit = {
@@ -19,6 +21,11 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             it.popBackStack()
         }
 
+    }
+
+    inner class ScreenState {
+        var shouldShowCamera: MutableState<Boolean> = mutableStateOf(false)
+        var shouldShowPhoto: MutableState<Boolean> = mutableStateOf(false)
     }
 
     interface Interactions {

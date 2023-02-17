@@ -25,7 +25,6 @@ import com.chua.billeasetask.ui.screen.takephoto.TakePhotoViewModel
 
 @Composable
 fun StatefulHomeScreen(
-    shouldShowPhoto: Boolean,
     homeViewModel: HomeViewModel,
     takePhotoViewModel: TakePhotoViewModel,
     navController: NavController,
@@ -33,7 +32,7 @@ fun StatefulHomeScreen(
     with(homeViewModel) {
         StatelessHomeScreen(
             takePhotoViewModel.photoUris,
-            shouldShowPhoto,
+            homeViewModel.uiState.shouldShowPhoto.value,
             onTakePhotoClicked = { interactions.takePhoto(navController) },
             onLogoutClicked = { interactions.logout(navController) },
         )
